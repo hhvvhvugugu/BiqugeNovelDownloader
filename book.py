@@ -71,9 +71,7 @@ class Book:
     def output_text_and_epub(self, config_dir, save_dir):
         for chapter_index, info in enumerate(self.chapter_info_list):  # 获取目录文,并且 遍历文件名
             """遍历合并文本所在的路径的单个文件"""
-            if not os.path.exists(os.path.join(config_dir, str(info.get('id')) + ".txt")):
-                print("章节:", info.get('name'), "未下载")
-            else:
+            if os.path.exists(os.path.join(config_dir, str(info.get('id')) + ".txt")):
                 content = write(os.path.join(config_dir, str(info.get('id')) + ".txt"), 'r').read()
                 Vars.epub_info.add_chapter(info.get('name'), content, chapter_index)
                 write(f'{save_dir}/{self.book_name}.txt', 'a', "\n\n\n" + content)

@@ -94,10 +94,6 @@ def setup_config():
                                 'help\t\t\t\t\t———获取使用程序帮助\nq | quit\t\t\t\t\t———退出运行的程序\nm | method\t\t\t\t\t———切换多线程和多进程\np | ' \
                                 'pool\t\t\t\t\t———改变线程数目\nu | updata\t\t\t\t\t———下载指定文本中的bookid '
         config_change = True
-    if type(Vars.cfg.data.get('tag')) is not dict or Vars.cfg.data.get('tag') == "":
-        Vars.cfg.data['tag'] = {1: '玄幻', 2: '奇幻', 3: '武侠', 4: '仙侠', 5: '都市', 6: '职场', 7: '历史',
-                                8: '军事', 9: '游戏', 10: '竞技', 11: '科幻', 12: '灵异', 13: '同人', 14: '轻小说'}
-        config_change = True
 
     if config_change:
         Vars.cfg.save()

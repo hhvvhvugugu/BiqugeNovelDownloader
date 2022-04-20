@@ -30,7 +30,6 @@ def shell_book(inputs):  # 通过小说ID下载单本小说
             config_dir = Vars.cfg.data.get('config_book') + "/" + book_name
             save_dir = Vars.cfg.data.get('save_book') + "/" + book_name
             makedirs(config_dir), makedirs(save_dir)
-            Vars.book_info.get_chapter_api()
             Vars.book_info.download_chapter_threading()
             # Vars.epub_info.epub_file_save(save_dir)
             Vars.book_info.output_text_and_epub(config_dir, save_dir)
@@ -41,15 +40,15 @@ def shell_book(inputs):  # 通过小说ID下载单本小说
         print('未输入Bookid')
 
 
-def shell_search_book(inputs):
-    if len(inputs) >= 2:
-        start = time.time()
-        response = BiquPavilionAPI.Book.search_book(inputs[1])
-        for index, books in enumerate(response):
-            shell_book([index, books.get('_id')])
-        print(f'下载耗时:{round(time.time() - start, 2)} 秒')
-    else:
-        print('未输入书名')
+# def shell_search_book(inputs):
+#     if len(inputs) >= 2:
+#         start = time.time()
+#         response = BiquPavilionAPI.Book.search_book(inputs[1])
+#         for index, books in enumerate(response):
+#             shell_book([index, books.get('_id')])
+#         print(f'下载耗时:{round(time.time() - start, 2)} 秒')
+#     else:
+#         print('未输入书名')
 
 
 def get_pool(inputs):
@@ -57,52 +56,10 @@ def get_pool(inputs):
         if inputs[1].isdigit():
             Vars.cfg.data['Thread_Pool'] = int(inputs[1])
             Vars.cfg.save(), print("线程已设置为", Vars.cfg.data.get('Thread_Pool'))
-            return
-        print("设置失败，输入信息不是数字")
+        else:
+            print("线程数必须为数字")
     else:
         print("默认线程为", Vars.cfg.data.get('Thread_Pool'))
-
-
-def shell_tag(inputs):
-    if len(inputs) >= 2:
-        tag_id = inputs[1]
-        if not Vars.cfg.data.get('tag').get(tag_id):
-            print(f"{tag_id} 标签号不存在\n")
-            for key, Value in Vars.cfg.data.get('tag').items():
-                print('{}:\t\t\t{}'.format(key, Value))
-            return
-        page = 0
-        while True:
-            tag_name = Vars.cfg.data.get('tag')[inputs[1]]
-            response = BiquPavilionAPI.Tag.tag_info(inputs[1], tag_name, page)
-            if response is None: break
-            for index, tag_info_data in enumerate(response, start=1):
-                print("\n\n{}分类 第{}本\n".format(tag_name, index))
-                shell_book([index, tag_info_data.get('_id')])
-            page += 20
-    else:
-        print(BiquPavilionAPI.Tag.get_type())
-
-
-def shell_ranking(inputs):
-    if len(inputs) >= 2:
-        novel_list = []
-        for data in BiquPavilionAPI.Tag.ranking(inputs[1])['ranking']['books']:
-            for key, Value in data.items():
-                if key == 'title':
-                    print('\n\n{}:\t\t\t{}'.format(key, Value))
-                    continue
-                book_info = '{}:\t\t\t{}'.format(key, Value) if len(
-                    key) <= 6 else '{}:\t\t{}'.format(key, Value)
-                print(book_info)
-            novel_list.append(data.get('_id'))
-        for index, novel_id in enumerate(novel_list):
-            shell_book([index, novel_id])
-
-    else:
-        ranking_dict = {'周榜': '1', '月榜': '2', '总榜': '3'}
-        for key, Value in ranking_dict.items():
-            print('{}:\t\t\t{}'.format(key, Value))
 
 
 def shell_list(inputs):
@@ -129,14 +86,8 @@ def shell():
             sys.exit("已退出程序")
         if inputs[0] == 'h' or inputs[0] == '--help':
             print(Vars.cfg.data.get('help'))
-        elif inputs[0] == 't' or inputs[0] == '--tag':
-            shell_tag(inputs)
         elif inputs[0] == 'd' or inputs[0] == '--download':
             shell_book(inputs)
-        elif inputs[0] == 'n' or inputs[0] == '--name':
-            shell_search_book(inputs)
-        elif inputs[0] == 'r' or inputs[0] == '--rank':
-            shell_ranking(inputs)
         elif inputs[0] == 'u' or inputs[0] == '--update':
             shell_list(inputs)
         elif inputs[0] == 'p' or inputs[0] == '--pool':

@@ -57,7 +57,7 @@ def post(api_url: str, data=None, **kwargs):
         return False
 
 
-@MaxRetry
+# @MaxRetry
 def put(api_url: str, data=None, **kwargs):
     try:
         response = requests.put(api_url, headers=headers(), params=data, **kwargs)
