@@ -17,26 +17,22 @@ def agreed_read_readme():
 
 def shell_book(inputs):  # 通过小说ID下载单本小说
     if len(inputs) >= 2:
-        Vars.book_info = BiquPavilionAPI.Book.novel_info(novel_id_url(inputs[1]))
-        if Vars.book_info is not None and isinstance(Vars.book_info, dict):
-            Vars.book_info = book.Book(Vars.book_info)
-            book_name = Vars.book_info.book_name
-            Vars.epub_info = epub.EpubFile(Vars.book_info.book_id, book_name, Vars.book_info.author_name)
-            Vars.epub_info.add_intro(
-                Vars.book_info.author_name, Vars.book_info.book_updated, Vars.book_info.last_chapter,
-                Vars.book_info.book_intro, Vars.book_info.book_tag
-            )
-            print("开始下载《{}》".format(book_name))
-            config_dir = Vars.cfg.data.get('config_book') + "/" + book_name
-            save_dir = Vars.cfg.data.get('save_book') + "/" + book_name
-            makedirs(config_dir), makedirs(save_dir)
-            Vars.book_info.download_chapter_threading()
-            Vars.book_info.output_text_and_epub(config_dir, save_dir)
-            print("《{}》下载完成".format(book_name))
+        response = BiquPavilionAPI.Book.novel_info(novel_id_url(inputs[1]))
+        if response is not None and isinstance(response, dict):
+            Vars.book_info = book.Book(response)
+            makedirs(Vars.cfg.data.get('save_book') + "/" + Vars.book_info.book_name)
+            print("开始下载《{}》\n{}".format(Vars.book_info.book_name, Vars.book_info.show_book_info()))
+            Vars.epub_info = epub.EpubFile()
+            Vars.epub_info.add_intro()
         else:
             print("获取书籍信息失败，请检查id或者重新尝试！")
+            return False
+        makedirs(Vars.book_info.config_book_dir)
+        Vars.book_info.download_chapter_threading()
+        Vars.book_info.output_text_and_epub()
+        print("《{}》下载完成".format(Vars.book_info.book_name))
     else:
-        print('未输入Bookid')
+        print('未输入Book-id')
 
 
 # def shell_search_book(inputs):
@@ -74,31 +70,28 @@ def shell_list(inputs):
         print(f"{list_file_name}文件不存在")
 
 
-def shell():
-    if len(sys.argv) > 1:
-        command_line, inputs = True, sys.argv[1:]
-    else:
+def shell(inputs: list):
+    choice = inputs[0].lower()
+    if choice == "q" or choice == 'quit':
+        sys.exit("已退出程序")
+    if choice == 'h' or choice == 'help':
         print(Vars.cfg.data.get('help'))
-        command_line, inputs = False, re.split('\\s+', inputs_('>').strip())
-    while True:
-        if inputs[0].startswith('q') or inputs[0] == '--quit':
-            sys.exit("已退出程序")
-        if inputs[0] == 'h' or inputs[0] == '--help':
-            print(Vars.cfg.data.get('help'))
-        elif inputs[0] == 'd' or inputs[0] == '--download':
-            shell_book(inputs)
-        elif inputs[0] == 'u' or inputs[0] == '--update':
-            shell_list(inputs)
-        elif inputs[0] == 'p' or inputs[0] == '--pool':
-            get_pool(inputs)
-        else:
-            print(inputs[0], '不是有效命令')
-        if command_line is True:
-            sys.exit(1)
-        inputs = re.split('\\s+', inputs_('>').strip())
+    elif choice == 'd' or choice == 'download':
+        shell_book(inputs)
+    elif choice == 'u' or choice == 'update':
+        shell_list(inputs)
+    elif choice == 'p' or choice == 'pool':
+        get_pool(inputs)
+    else:
+        print(choice, '不是有效命令,请输入help查看帮助')
 
 
 if __name__ == '__main__':
     setup_config()
     agreed_read_readme()
-    shell()
+    if len(sys.argv) > 1:
+        shell(sys.argv[1:])
+    else:
+        print(Vars.cfg.data.get('help'))
+        while True:
+            shell(re.split('\\s+', inputs_('>').strip()))

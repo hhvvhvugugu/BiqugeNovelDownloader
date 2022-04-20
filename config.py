@@ -3,6 +3,7 @@ import os
 import sys
 from rich import print
 
+
 class Config:
     file_path = None
     dir_path = None
@@ -12,7 +13,6 @@ class Config:
         self.file_path = file_path
         self.dir_path = dir_path
         self.data = {}
-
 
     def load(self):
         try:
