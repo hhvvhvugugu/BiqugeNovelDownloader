@@ -3,23 +3,6 @@ import BiquPavilionAPI
 from instance import *
 
 
-def output_chapter_content(chapter_content, chapter_title="", intro=False):
-    content = ""
-    if intro is True:
-        for line in chapter_content.splitlines():
-            chapter_line = line.strip("　").strip()
-            if chapter_line != "":
-                content += "\n" + chapter_line[:60]
-        return content
-    for line in chapter_content.splitlines():
-        chapter_line = line.strip("　").strip()
-        if chapter_line != "" and len(chapter_line) > 2:
-            if "http" in chapter_line:
-                continue
-            content += "\n　　{}".format(chapter_line)
-    return f"{chapter_title}\n{content}"
-
-
 class Book:
 
     def __init__(self, book_info: dict, index=None):
@@ -28,7 +11,7 @@ class Book:
         self.chapter_info_list = list()
         self.threading_pool = list()
         self.download_chapter_list = list()
-        self.pool_sema = threading.BoundedSemaphore(10)
+        self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data.get('threading_pool_size'))
         self.book_name = book_info.get('Name')
         self.book_id = novel_id_url(book_info.get('Id'))
         self.author_name = book_info.get('Author')
@@ -43,7 +26,7 @@ class Book:
         show_info = '作者:{0:<{2}}状态:{1}\n'.format(self.author_name, self.book_state, isCN(self.author_name))
         show_info += '最新:{0:<{2}}更新:{1}\n'.format(self.last_chapter, self.book_updated, isCN(self.last_chapter))
         print(show_info)
-        return '{}简介:\n{}'.format(show_info, output_chapter_content(self.book_intro, intro=True))
+        return '{}简介:\n{}'.format(show_info, self.arrange(self.book_intro, intro=True))
 
     def progress(self, download_length) -> None:
         percentage = (self.progress_bar / download_length) * 100
@@ -55,7 +38,7 @@ class Book:
         content_info = BiquPavilionAPI.Chapter.content(self.book_id, chapter_info.get('id'))
         if content_info.get('cname') != "该章节未审核通过":
             file_name = "{}/{}/{}.txt".format(Vars.cfg.data.get('config_book'), self.book_name, content_info.get('cid'))
-            write(file_name, 'w', output_chapter_content(content_info.get('content'), content_info.get('cname')))
+            write(file_name, 'w', self.arrange(content_info.get('content'), content_info.get('cname')))
             self.progress(download_length)
         self.pool_sema.release()
 
@@ -97,3 +80,19 @@ class Book:
         for thread in self.threading_pool:
             thread.join()
         self.threading_pool.clear()
+
+    def arrange(self, chapter_content, chapter_title="", intro=False):
+        content = ""
+        if intro is True:
+            for line in chapter_content.splitlines():
+                chapter_line = line.strip("　").strip()
+                if chapter_line != "":
+                    content += "\n" + chapter_line[:60]
+            return content
+        for line in chapter_content.splitlines():
+            chapter_line = line.strip("　").strip()
+            if chapter_line != "" and len(chapter_line) > 2:
+                if "http" in chapter_line:
+                    continue
+                content += "\n　　{}".format(chapter_line)
+        return f"{chapter_title}\n{content}"

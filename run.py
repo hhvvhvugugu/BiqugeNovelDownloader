@@ -5,11 +5,11 @@ from instance import *
 
 
 def agreed_read_readme():
-    if Vars.cfg.data.get('agreed_to_readme') != 'yes':
+    if Vars.cfg.data.get('Disclaimers') != 'yes':
         print(Vars.cfg.data.get('agree_terms'))
         confirm = inputs_('>').strip()
         if confirm == 'yes' or confirm == '同意':
-            Vars.cfg.data['agreed_to_readme'] = 'yes'
+            Vars.cfg.data['Disclaimers'] = 'yes'
             Vars.cfg.save()
         else:
             sys.exit()
@@ -53,12 +53,12 @@ def shell_book(inputs):  # 通过小说ID下载单本小说
 def get_pool(inputs):
     if len(inputs) >= 2:
         if inputs[1].isdigit():
-            Vars.cfg.data['Thread_Pool'] = int(inputs[1])
-            Vars.cfg.save(), print("线程已设置为", Vars.cfg.data.get('Thread_Pool'))
+            Vars.cfg.data['threading_pool_size'] = int(inputs[1])
+            Vars.cfg.save(), print("线程已设置为", Vars.cfg.data.get('threading_pool_size'))
         else:
             print("线程数必须为数字")
     else:
-        print("默认线程为", Vars.cfg.data.get('Thread_Pool'))
+        print("默认线程为", Vars.cfg.data.get('threading_pool_size'))
 
 
 def shell_list(inputs):

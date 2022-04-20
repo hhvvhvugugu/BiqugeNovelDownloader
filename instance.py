@@ -75,12 +75,11 @@ def setup_config():
     if type(Vars.cfg.data.get('config_book')) is not str or Vars.cfg.data.get('config_book') == "":
         Vars.cfg.data['config_book'] = 'config'
         config_change = True
-    if type(Vars.cfg.data.get('Pool')) is not int or Vars.cfg.data.get('ThVars.cfg.data_Pool') == "":
-        Vars.cfg.data['Pool'] = 12
+    if type(Vars.cfg.data.get('threading_pool_size')) is not int or Vars.cfg.data.get('threading_pool_size') == "":
+        Vars.cfg.data['threading_pool_size'] = 12
         config_change = True
-    if type(Vars.cfg.data.get('agreed_to_Vars.cfg.datame')) is not str or Vars.cfg.data.get(
-            'agreed_to_Vars.cfg.datame') == "":
-        Vars.cfg.data['agreed_to_Vars.cfg.datame'] = 'No'
+    if type(Vars.cfg.data.get('Disclaimers')) is not str or Vars.cfg.data.get('Disclaimers') == "":
+        Vars.cfg.data['Disclaimers'] = 'No'
         config_change = True
     if type(Vars.cfg.data.get('agree_terms')) is not str or Vars.cfg.data.get('agree_terms') == "":
         Vars.cfg.data['agree_terms'] = '是否以仔细阅读且同意LICENSE中叙述免责声明\n如果同意声明，请输入英文 \"yes\" 或者中文 \"同意\" 后按Enter建，如果不同意请关闭此程式'
