@@ -37,6 +37,7 @@ class Book:
         self.book_tag = book_info.get('CName')
         self.book_updated = book_info.get('LastTime')
         self.last_chapter = del_title(book_info.get('LastChapter'))
+        self.cover_url = "https://imgapixs.pigqq.com/BookFiles/BookImages/" + book_info.get('Img')
 
     def show_book_info(self) -> str:
         show_info = '作者:{0:<{2}}状态:{1}\n'.format(self.author_name, self.book_state, isCN(self.author_name))
@@ -44,42 +45,32 @@ class Book:
         print(show_info)
         return '{}简介:\n{}'.format(show_info, output_chapter_content(self.book_intro, intro=True))
 
-    #
-    # def download_book(self, config_dir: str, save_dir: str):
-    #     if self.last_chapter is not None:
-    #         write(save_dir + '/' + f'{self.book_name}.txt', 'w', self.show_book_info())
-    #     if self.download_chapter_threading() == 0:
-    #         print("没有需要下载的章节！")
-    #     self.output_text_and_epub(config_dir, save_dir)
-    #     print(self.book_name, '本地档案合并完毕')
-
-    def progress(self, download_length):
+    def progress(self, download_length) -> None:
         percentage = (self.progress_bar / download_length) * 100
         print('{}/{} 进度:{:^3.0f}%'.format(self.progress_bar, download_length, percentage), end='\r')
         self.progress_bar += 1
 
-    def download_content_threading(self, chapter_info, download_length):
+    def download_content_threading(self, chapter_info, download_length) -> None:
         self.pool_sema.acquire()
         content_info = BiquPavilionAPI.Chapter.content(self.book_id, chapter_info.get('id'))
         if content_info.get('cname') != "该章节未审核通过":
             file_name = "{}/{}/{}.txt".format(Vars.cfg.data.get('config_book'), self.book_name, content_info.get('cid'))
             write(file_name, 'w', output_chapter_content(content_info.get('content'), content_info.get('cname')))
-            # print(content_info.get('cname'))
             self.progress(download_length)
         self.pool_sema.release()
 
-    def output_text_and_epub(self, config_dir, save_dir):
+    def output_text_and_epub(self, config_dir, save_dir) -> None:
+        write(save_dir + '/' + f'{self.book_name}.txt', 'w', self.show_book_info())
         for chapter_index, info in enumerate(self.chapter_info_list):  # 获取目录文,并且 遍历文件名
-            """遍历合并文本所在的路径的单个文件"""
             if os.path.exists(os.path.join(config_dir, str(info.get('id')) + ".txt")):
                 content = write(os.path.join(config_dir, str(info.get('id')) + ".txt"), 'r').read()
-                Vars.epub_info.add_chapter(info.get('name'), content, chapter_index)
+                Vars.epub_info.add_chapter(info.get('id'), info.get('name'), content, chapter_index)
                 write(f'{save_dir}/{self.book_name}.txt', 'a', "\n\n\n" + content)
         Vars.epub_info.save()
         self.chapter_info_list.clear()
         self.download_chapter_list.clear()
 
-    def get_chapter_api(self):
+    def get_chapter_api(self) -> int:
         filename_list = os.listdir(os.path.join(Vars.cfg.data.get('config_book'), self.book_name))
         catalogue_info_list = BiquPavilionAPI.Book.catalogue(self.book_id)
         for index, catalogue_info in enumerate(catalogue_info_list):
@@ -97,11 +88,9 @@ class Book:
             print("没有需要下载的章节！")
             return download_length
         for index, chapter_info in enumerate(self.download_chapter_list):
-            thread = threading.Thread(
-                target=self.download_content_threading, args=(chapter_info, download_length,)
+            self.threading_pool.append(
+                threading.Thread(target=self.download_content_threading, args=(chapter_info, download_length,))
             )
-            self.threading_pool.append(thread)
-
         for thread in self.threading_pool:
             thread.start()
 

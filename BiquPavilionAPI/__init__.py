@@ -5,7 +5,7 @@ from BiquPavilionAPI import HttpUtil
 
 def get(api_url: str, params: dict = None) -> [str, dict]:
     # api_url = UrlConstants.WEB_SITE + api_url.replace(UrlConstants.WEB_SITE, '')
-    return demjson.decode(HttpUtil.get(api_url, params))
+    return demjson.decode(str(HttpUtil.get(api_url, params).text))
 
 
 class Book:
@@ -34,11 +34,7 @@ class Chapter:
 
 class Cover:
     @staticmethod
-    def download_cover(max_retry=10) -> str:
-        for retry in range(max_retry):
-            params = {'type': 'moe', 'size': '1920x1080'}
-            response = HttpUtil.get('https://api.yimian.xyz/img', params=params)
-            if response.status_code == 200:
-                return HttpUtil.get(response.url).content
-            else:
-                print("msg:", response.text)
+    def download_cover(url: str, params: dict = None) -> bytes:
+        response = HttpUtil.get(url, params=params).content
+        if response:
+            return response

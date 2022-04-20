@@ -31,7 +31,6 @@ def shell_book(inputs):  # 通过小说ID下载单本小说
             save_dir = Vars.cfg.data.get('save_book') + "/" + book_name
             makedirs(config_dir), makedirs(save_dir)
             Vars.book_info.download_chapter_threading()
-            # Vars.epub_info.epub_file_save(save_dir)
             Vars.book_info.output_text_and_epub(config_dir, save_dir)
             print("《{}》下载完成".format(book_name))
         else:

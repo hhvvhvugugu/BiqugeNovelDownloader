@@ -37,7 +37,7 @@ def get(api_url: str, params=None, max_retry=10, **kwargs):
             response = requests.get(api_url, headers=headers(), params=params, **kwargs)
             response.encoding = 'utf-8-sig'
             if response.status_code == 200:
-                return str(response.text)
+                return response
             print("status_code:", response.status_code)
         except requests.exceptions.RequestException as error:
             if retry >= 2:
@@ -57,7 +57,7 @@ def post(api_url: str, data=None, **kwargs):
         return False
 
 
-# @MaxRetry
+@MaxRetry
 def put(api_url: str, data=None, **kwargs):
     try:
         response = requests.put(api_url, headers=headers(), params=data, **kwargs)

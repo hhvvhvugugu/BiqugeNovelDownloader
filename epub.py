@@ -27,9 +27,10 @@ class EpubFile:
         self.EpubList.append(intro_)
 
     def cover(self):
-        self.epub.set_cover(self.book_name + '.png', BiquPavilionAPI.Cover.download_cover())
+        cover_jpg = BiquPavilionAPI.Cover.download_cover(Vars.book_info.cover_url)
+        self.epub.set_cover(self.book_name + '.png', cover_jpg)
 
-    def add_chapter(self, chapter_title: str, content: str, serial_number: str):
+    def add_chapter(self, chapter_id: str, chapter_title: str, content: str, serial_number: str):
         default_style = '''
         body {font-size:100%;}
         p{
@@ -46,7 +47,7 @@ class EpubFile:
                                     content=default_style)
 
         chapter_serial = epub.EpubHtml(
-            title=chapter_title, file_name=str(serial_number).rjust(4, "0") + '-' + chapter_title + '.xhtml',
+            title=chapter_title, file_name=str(serial_number).rjust(4, "0") + '-' + str(chapter_id) + '.xhtml',
             lang='zh-CN', uid='chapter_{}'.format(serial_number)
         )
 
