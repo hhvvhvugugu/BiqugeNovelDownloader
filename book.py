@@ -24,7 +24,7 @@ class Book:
         self.last_chapter = del_title(book_info.get('LastChapter'))
         self.pool_sema = threading.BoundedSemaphore(Vars.cfg.data.get('threading_pool_size'))
 
-    def show_book_info(self) -> None:
+    def show_book_info(self) -> str:
         show_info = '作者:{0:<{2}}状态:{1}\n'.format(self.author_name, self.book_state, isCN(self.author_name))
         show_info += '最新:{0:<{2}}更新:{1}\n'.format(self.last_chapter, self.book_updated, isCN(self.last_chapter))
         self.config_book_dir = os.path.join(Vars.cfg.data.get('config_book'), self.book_name)
@@ -32,19 +32,17 @@ class Book:
         write(self.save_book_dir, 'w', '{}简介:\n{}'.format(show_info, self.arrange(self.book_intro, intro=True)))
         return show_info
 
-    def progress(self, download_length) -> None:
-        percentage = (self.progress_bar / download_length) * 100
-        print('{}/{} 进度:{:^3.0f}%'.format(self.progress_bar, download_length, percentage), end='\r')
+    def progress(self, length: int) -> None:
+        percentage = (self.progress_bar / length) * 100
+        print('{}/{} 进度:{:^3.0f}%'.format(self.progress_bar, length, percentage), end='\r')
         self.progress_bar += 1
 
     def download_content_threading(self, chapter_info, download_length) -> None:
         self.pool_sema.acquire()
         content_info = BiquPavilionAPI.Chapter.content(self.book_id, chapter_info.get('id'))
         if content_info.get('cname') != "该章节未审核通过":
-            write(
-                "{}/{}.txt".format(self.config_book_dir, content_info.get('cid')), 'w',
-                self.arrange(content_info.get('content'), content_info.get('cname'))
-            )
+            content = self.arrange(content_info.get('content'), content_info.get('cname'))
+            write("{}/{}.txt".format(self.config_book_dir, content_info.get('cid')), 'w', content)
             self.progress(download_length)
         self.pool_sema.release()
 
@@ -85,7 +83,7 @@ class Book:
             thread.join()
         self.threading_pool.clear()
 
-    def arrange(self, chapter_content, chapter_title="", intro=False):
+    def arrange(self, chapter_content: str, chapter_title: str = "", intro: bool = False):
         content = ""
         if intro is True:
             for line in chapter_content.splitlines():
